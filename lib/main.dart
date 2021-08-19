@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import "package:flutter/material.dart";
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:dio_http_cache/dio_http_cache.dart';
 
 class Data {
   late final int userId;
@@ -25,11 +27,36 @@ class Data {
 }
 
 Future<List<Data>> fetchData() async{
-  final Uri url = Uri.parse('https://jsonplaceholder.typicode.com/albums');
+  final Uri url = Uri.parse("https://jsonplaceholder.typicode.com/albums");
+  const String URL_I = "https://jsonplaceholder.typicode.com/albums";
+  const String URL_II = "https://jsonplaceholder.typicode.com/todos/1";
   final response = await http.get(url);
 
+  final responseII = await Dio().get(
+    URL_I,
+      options: buildCacheOptions(
+          Duration(hours: 1),
+          forceRefresh: false
+      ),
+
+  );
+
   if(response.statusCode == 200){
-    List jsonResponse = json.decode(response.body);
+    print(response.body);
+    lineBreak();
+    print(json.decode(response.body));
+    lineBreak();
+  }
+
+  if(responseII.statusCode == 200){
+
+    print(json.encode(responseII.data));
+    lineBreak();
+  }
+
+  if(responseII.statusCode == 200){
+    List jsonResponse =  responseII.data; //json.decode(json.encode(responseII.data));
+
     return jsonResponse.map((data) => new Data.fromJson(data)).toList();
   }
   else{
@@ -101,6 +128,10 @@ class _AppState extends State<App> {
       )
     );
   }
+}
+
+void lineBreak(){
+  print("\n \n \n -------------------------------------------------------------------------- \n \n \n");
 }
 
 
